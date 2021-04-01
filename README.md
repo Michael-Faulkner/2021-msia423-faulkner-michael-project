@@ -1,5 +1,7 @@
 # MSiA423 Template Repository
+
 Michael Faulkner
+
 QA: Brian Lewis
 
 <!-- toc -->
