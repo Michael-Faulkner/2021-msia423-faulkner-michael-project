@@ -23,6 +23,32 @@ QA: Brian Lewis
 
 <!-- tocstop -->
 
+# Project Charter
+
+## Vision
+In 2020 the amount spent on video games was $56.9 billion which was a 27% increase from 2019. Steam was one of the platforms that gained from this increase as it is one of the most popular places people go to find and buy new games. With such a large increase in the amount spent on video games last year, it's no surprise that Steam broke the record for most concurrent users on a video game platform 6 times, with the last one being at over 26 million concurrent active users. One advantage that Steam has over other platforms is that they offer over 30,000 different video games that users are able to purchase and download without having to leave their home. With such a large catalog of different games, users can be overwhelmed and abandon their search when they are trying to find a new game to play. 
+
+My vision is to create more accurate and personalized recommendations to increase user engagement and satisfaction with the Steam platform.
+
+## Mission
+
+To achieve the above vision, a recommender system utilizing collaborative-based filtering will be created. The model will take a user's (user A) most played games and find a group of users who also own those games. Then the model will find the most popular games among the group of new users and return an ordered list of recommended games to user A. 
+
+Data containing the video games purchased by 69,277 unique users have been previously collected and will be used for the collaborative filtering recommender system. [Steam User and Item Data](https://cseweb.ucsd.edu/~jmcauley/datasets.html#steam_data) 
+
+## Success Criteria
+
+Model Performance Metric:
+
+   1. The Recommender System will be deployed if an AUC score of at least 0.75 is achieved.
+
+Business Metrics:
+
+   1. Measure the percent difference a user clicks to view more information about a game they do not currently own
+   2. Compare the average review left by users who were recommended a game versus discovering it on their own
+   3. Measure the percent difference in the number of video games sold 
+    
+
 ## Directory structure 
 
 ```
