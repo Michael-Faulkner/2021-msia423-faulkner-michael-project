@@ -44,9 +44,8 @@ Model Performance Metric:
 
 Business Metrics:
 
-   1. Measure the percent difference a user clicks to view more information about a game they do not currently own
+   1. Use an A/B test to see if the recommender systems leads to an increase in customers buying more games and spending more time on Steam
    2. Compare the average review left by users who were recommended a game versus discovering it on their own
-   3. Measure the percent difference in the number of video games sold 
     
 
 ## Directory structure 
