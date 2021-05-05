@@ -1,10 +1,7 @@
 import argparse
 
-import logging.config
-logging.config.fileConfig('config/logging/local.conf')
-logger = logging.getLogger('penny-lane-pipeline')
-
-from src.add_songs import TrackManager, create_db
+from src.download import download, upload
+from src.createTable import createTable
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 if __name__ == '__main__':
@@ -19,23 +16,22 @@ if __name__ == '__main__':
                            help="SQLAlchemy connection URI for database")
 
     # Sub-parser for ingesting new data
-    sb_ingest = subparsers.add_parser("ingest", description="Add data to database")
-    sb_ingest.add_argument("--artist", default="Emancipator", help="Artist of song to be added")
-    sb_ingest.add_argument("--title", default="Minor Cause", help="Title of song to be added")
-    sb_ingest.add_argument("--album", default="Dusk to Dawn", help="Album of song being added")
-    sb_ingest.add_argument("--engine_string", default='sqlite:///data/tracks.db',
-                           help="SQLAlchemy connection URI for database")
+    sp_data = subparsers.add_parser("get_data", description="Downloads or Uploads data from the internet or S3")
+    sp_data.add_argument("Download", default=True, help="")
+    sp_data.add_argument("--url", default="http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz", help="url to acquire data from")
+    sp_data.add_argument("--gzip_file_path", default="data/australian_users_items.json.gz", help="Local File path to save data file")
+    sp_data.add_argument("--bucket_name", default="2021-msia423-faulkner-michael", help="s3 bucket name")
+    sp_data.add_argument("--bucket_path", default='data.json.gz', help="SQLAlchemy connection URI for database")
 
     args = parser.parse_args()
     sp_used = args.subparser_name
     if sp_used == 'create_db':
-        create_db(args.engine_string)
-    elif sp_used == 'ingest':
-        tm = TrackManager(engine_string=args.engine_string)
-        tm.add_track(args.title, args.artist, args.album)
-        tm.close()
+        createTable(args.engine_string)
+    elif sp_used == 'get_data':
+        if args.Download:
+            download(args.url, args.gzip_file_path)
+            upload(args.gzip_file_path, args.bucket_name, args.bucket_path)
+        else:
+            upload(args.gzip_file_path, args.bucket_name, args.bucket_path)
     else:
         parser.print_help()
-
-
-
