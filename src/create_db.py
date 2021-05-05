@@ -1,12 +1,11 @@
-import argparse
+
 import logging
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
 import sqlalchemy
-from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 
-def createTable(engine_string):
+def create_db(engine_string):
     base = declarative_base()
 
     class User(base):

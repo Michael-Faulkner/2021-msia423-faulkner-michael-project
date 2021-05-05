@@ -108,13 +108,14 @@ This command builds the Docker image, with the tag `steamRecommender`, based on 
 The data can be downloaded by running the command below once the Docker image has been built. It can also be found at http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz.
 
 ```bash
-docker run steamRecommender run.py get_data upload=False
+docker run steamRecommender run.py get_data --upload=False
 ```
 get_data can also take the following optional arguments:
 
 ```bash
 gzip_file_path: Where the downloaded data file is stored locally.
 url: The target url where the data is.
+upload: Whether the data will be automatically uploaded to S3
 ```
 To utilize the optional arguments stated above, a command similar to the one below can be run.
 
@@ -128,7 +129,7 @@ export AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 export AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key> 
 ````
 ```bash
-docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 run.py get_data upload=True
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 run.py get_data
 ```
 
 In addition to the optional arguments found above, when using upload=True there are two more additional arguments.

@@ -1,6 +1,6 @@
 import argparse
 
-from src.download import download, upload
+from src.get_data import download, upload
 from src.createTable import createTable
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # Sub-parser for ingesting new data
     sp_data = subparsers.add_parser("get_data", description="Downloads or Uploads data from the internet or S3")
-    sp_data.add_argument("Download", default=True, help="")
+    sp_data.add_argument("--upload", default=True, help="")
     sp_data.add_argument("--url", default="http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz", help="url to acquire data from")
     sp_data.add_argument("--gzip_file_path", default="data/australian_users_items.json.gz", help="Local File path to save data file")
     sp_data.add_argument("--bucket_name", default="2021-msia423-faulkner-michael", help="s3 bucket name")
@@ -28,10 +28,8 @@ if __name__ == '__main__':
     if sp_used == 'create_db':
         createTable(args.engine_string)
     elif sp_used == 'get_data':
-        if args.Download:
-            download(args.url, args.gzip_file_path)
-            upload(args.gzip_file_path, args.bucket_name, args.bucket_path)
-        else:
+        download(args.url, args.gzip_file_path)
+        if args.upload:
             upload(args.gzip_file_path, args.bucket_name, args.bucket_path)
     else:
         parser.print_help()
