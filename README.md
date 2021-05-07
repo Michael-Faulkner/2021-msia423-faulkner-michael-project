@@ -92,7 +92,7 @@ Business Metrics:
 ├── requirements.txt                  <- Python package dependencies 
 ```
 
-## Building the Docker image
+### Building the Docker image
 
 
 
@@ -104,7 +104,7 @@ The Dockerfile used for data acquisition, uploading to s3, and creating the data
 
 This command builds the Docker image, with the tag `steam_recommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
 
-### Downloading the data and uploading to S3
+### Uploading data to S3
 Before downloading the data AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be environmental variables in your current terminal session. They can be specified by running the code below.
 
 ```bash
@@ -112,13 +112,17 @@ export AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 export AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key> 
 ````
 
-Once these enviromental variables have been set the following docker run command can be used to both download, and upload the data.
+Once these environmental variables have been set the following docker run command can be used to both download, and upload the data.
 
 
 ```bash
 docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data
 ```
-get_data can also take the following optional arguments:
+
+By default, this will download the raw data to the local file: ```data/raw/australian_users_items.json ``` and then upload into the S3 bucket at ``` s3://2021-msia423-faulkner-michael/raw/data.json```
+
+
+To change the locations of where the files are saved locally or on S3, get_data can also take the following optional arguments:
 
 ```bash
 gzip_file_path: Where the downloaded data file is stored locally
@@ -131,7 +135,7 @@ bucket_file_path: The path where the data file will be stored on S3.
 
 Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so.
 
-By default, the data will be stored on S3 at raw/data.json
+
 
 
 ### Initialize the database 
@@ -156,7 +160,7 @@ There are two alternative options to creating the database on RDS. The first is 
 docker run steam_recommender run.py create_db --engine_string=<database path>
 ```
 
-The final option is to not include any environmental variables, or an engine string, and the create_db function will create the database locally at:
+The final option is to not include any environmental variables, or an engine string, and the create_db function will create the database locally at the default path:
 ```bash
 sqlite:///data/msia423_db.db
 ```
