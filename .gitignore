@@ -7,8 +7,10 @@ __pycache__/
 .log
 .ipynb_checkpoints/
 
-
+.awsconfig
+.mysqlconfig
 data/*
+!data/raw/
 !data/sample/
 !data/external/
 config/local
