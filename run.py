@@ -28,7 +28,7 @@ if __name__ == '__main__':
     sp_data.add_argument("--unzipped_file_path", default="data/raw/australian_users_items.json",
                          help="Local file path for unzipped data file")
     sp_data.add_argument("--bucket_name", default="2021-msia423-faulkner-michael", help="s3 bucket name")
-    sp_data.add_argument("--bucket_path", default='raw/data.json', help="SQLAlchemy connection URI for database")
+    sp_data.add_argument("--bucket_file_path", default='raw/data.json', help="SQLAlchemy connection URI for database")
 
     args = parser.parse_args()
     sp_used = args.subparser_name
@@ -39,6 +39,6 @@ if __name__ == '__main__':
         create_db(args.engine_string)
     elif sp_used == 'get_data':
         download(args.url, args.gzip_file_path, args.unzipped_file_path)
-        upload(args.unzipped_file_path, args.bucket_name, args.bucket_path)
+        upload(args.unzipped_file_path, args.bucket_file_name, args.bucket_path)
     else:
         parser.print_help()
