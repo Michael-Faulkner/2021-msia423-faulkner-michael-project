@@ -39,6 +39,6 @@ if __name__ == '__main__':
         create_db(args.engine_string)
     elif sp_used == 'get_data':
         download(args.url, args.gzip_file_path, args.unzipped_file_path)
-        upload(args.unzipped_file_path, args.bucket_file_name, args.bucket_path)
+        upload(args.unzipped_file_path, args.bucket_name, args.bucket_file_path)
     else:
         parser.print_help()
