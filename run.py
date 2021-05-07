@@ -28,7 +28,7 @@ if __name__ == '__main__':
     sp_data.add_argument("--unzipped_file_path", default="data/raw/australian_users_items.json",
                          help="Local file path for unzipped data file")
     sp_data.add_argument("--bucket_name", default="2021-msia423-faulkner-michael", help="s3 bucket name")
-    sp_data.add_argument("--bucket_file_path", default='raw/data.json', help="SQLAlchemy connection URI for database")
+    sp_data.add_argument("--bucket_file_path", default='raw/australian_users_items.json', help="SQLAlchemy connection URI for database")
 
     args = parser.parse_args()
     sp_used = args.subparser_name
