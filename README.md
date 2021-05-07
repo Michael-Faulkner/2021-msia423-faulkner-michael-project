@@ -99,47 +99,39 @@ Business Metrics:
 The Dockerfile used for data acquisition, uploading to s3, and creating the database is found in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
 ```bash
- docker build -f app/Dockerfile -t steamRecommender .
+ docker build -f app/Dockerfile -t steam_recommender .
 ```
 
-This command builds the Docker image, with the tag `steamRecommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
+This command builds the Docker image, with the tag `steam_recommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
 
-### Acquire the data
-The data can be downloaded by running the command below once the Docker image has been built. It can also be found at http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz.
+### Downloading the data and uploading to S3
+Before downloading the data AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be environmental variables in your current terminal session. They can be specified by running the code below.
 
-```bash
-docker run steamRecommender run.py get_data --upload=False
-```
-get_data can also take the following optional arguments:
-
-```bash
-gzip_file_path: Where the downloaded data file is stored locally.
-url: The target url where the data is.
-upload: Whether the data will be automatically uploaded to S3
-```
-To utilize the optional arguments stated above, a command similar to the one below can be run.
-
-```bash
-docker run steamRecommender run.py get_data upload=False --gzip_file_path FilePath.gz --url www.website.com/data.gz
-```
-
-The get_data input can also upload the downlaoded gzip file to S3 by setting the upload argument to True. In order for the data to be successfully uploaded to S3 both the aws_access_key_id, and aws_secret_access_key variables have to be supplied in the Docker command as environment variables. 
 ```bash
 export AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 export AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key> 
 ````
-```bash
-docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY msia423 run.py get_data
-```
 
-In addition to the optional arguments found above, when using upload=True there are two more additional arguments.
+Once these enviromental variables have been set the following docker run command can be used to both download, and upload the data.
+
 
 ```bash
-bucket_name: The name of the target bucket on S3
-bucket_path: The path where the data file will be stored on S3. 
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data
 ```
- 
-The files should be downloaded, and stored in the `data/raw` folder.
+get_data can also take the following optional arguments:
+
+```bash
+gzip_file_path: Where the downloaded data file is stored locally
+unzipped_file_path: Where the unzipped file is store locally
+url: The target url where the data will be downloaded from
+
+bucket_name: The name of the bucket on S3
+bucket_file_path: The path where the data file will be stored on S3.
+```
+
+Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so.
+
+By default, the data will be stored on S3 at raw/data.json
 
 
 ### Initialize the database 
@@ -156,12 +148,12 @@ export DATABASE_NAME="YOUR_DATABASE_NAME"
 Once the five variables above have been set, they can be passed into the Docker image with the create_db command to create the database as shown below.
 
 ```bash
-docker run -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_HOST -e MYSQL_PORT -e DATABASE_NAME steamRecommender run.py create_db
+docker run -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_HOST -e MYSQL_PORT -e DATABASE_NAME steam_recommender run.py create_db
 ```
 
-There are two alternative options to create the database. The first is to specify the engine_string argument that defines where the database should be created.
+There are two alternative options to creating the database on RDS. The first is to specify the engine_string argument that defines a custom location for the database.
 ```bash
-docker run steamRecommender run.py create_db --engine_string=<database path>
+docker run steam_recommender run.py create_db --engine_string=<database path>
 ```
 
 The final option is to not include any environmental variables, or an engine string, and the create_db function will create the database locally at:
