@@ -48,7 +48,9 @@ class OwnedGames(base):
 
 
 def create_db(engine_string):
-    """Creates a database at the specified engine_string that contains the data models inherited by `Base`.
+    """Creates a database at the specified engine_string that contains the data models inherited by `Base`. This
+        function does not return anything, instead it creates a database instance at the specified location that
+        contains the Games, Players, and OwnedGames tables.
     Args:
         engine_string: :obj:`String` String defining the connection to the SQL database
     Returns:
