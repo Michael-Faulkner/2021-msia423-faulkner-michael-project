@@ -92,143 +92,81 @@ Business Metrics:
 ├── requirements.txt                  <- Python package dependencies 
 ```
 
-## Running the app
-### 1. Initialize the database 
-
-#### Create the database 
-To create the database in the location configured in `config.py` run: 
-
-`python run.py create_db --engine_string=<engine_string>`
-
-By default, `python run.py create_db` creates a database at `sqlite:///data/tracks.db`.
-
-#### Adding songs 
-To add songs to the database:
-
-`python run.py ingest --engine_string=<engine_string> --artist=<ARTIST> --title=<TITLE> --album=<ALBUM>`
-
-By default, `python run.py ingest` adds *Minor Cause* by Emancipator to the SQLite database located in `sqlite:///data/tracks.db`.
-
-#### Defining your engine string 
-A SQLAlchemy database connection is defined by a string with the following format:
-
-`dialect+driver://username:password@host:port/database`
-
-The `+dialect` is optional and if not provided, a default is used. For a more detailed description of what `dialect` and `driver` are and how a connection is made, you can see the documentation [here](https://docs.sqlalchemy.org/en/13/core/engines.html). We will cover SQLAlchemy and connection strings in the SQLAlchemy lab session on 
-##### Local SQLite database 
-
-A local SQLite database can be created for development and local testing. It does not require a username or password and replaces the host and port with the path to the database file: 
-
-```python
-engine_string='sqlite:///data/tracks.db'
-
-```
-
-The three `///` denote that it is a relative path to where the code is being run (which is from the root of this directory).
-
-You can also define the absolute path with four `////`, for example:
-
-```python
-engine_string = 'sqlite://///Users/cmawer/Repos/2020-MSIA423-template-repository/data/tracks.db'
-```
+### Building the Docker image
 
 
-### 2. Configure Flask app 
 
-`config/flaskconfig.py` holds the configurations for the Flask app. It includes the following configurations:
-
-```python
-DEBUG = True  # Keep True for debugging, change to False when moving to production 
-LOGGING_CONFIG = "config/logging/local.conf"  # Path to file that configures Python logger
-HOST = "0.0.0.0" # the host that is running the app. 0.0.0.0 when running locally 
-PORT = 5000  # What port to expose app on. Must be the same as the port exposed in app/Dockerfile 
-SQLALCHEMY_DATABASE_URI = 'sqlite:///data/tracks.db'  # URI (engine string) for database that contains tracks
-APP_NAME = "penny-lane"
-SQLALCHEMY_TRACK_MODIFICATIONS = True 
-SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
-MAX_ROWS_SHOW = 100 # Limits the number of rows returned from the database 
-```
-
-### 3. Run the Flask app 
-
-To run the Flask app, run: 
+The Dockerfile used for data acquisition, uploading to s3, and creating the database is found in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
 ```bash
-python app.py
+ docker build -f app/Dockerfile -t steam_recommender .
 ```
 
-You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
+This command builds the Docker image, with the tag `steam_recommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
 
-## Running the app in Docker 
-
-### 1. Build the image 
-
-The Dockerfile for running the flask app is in the `app/` folder. To build the image, run from this directory (the root of the repo): 
+### Uploading data to S3
+Before downloading the data AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be environmental variables in your current terminal session. They can be specified by running the code below.
 
 ```bash
- docker build -f app/Dockerfile -t pennylane .
+export AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
+export AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key> 
+````
+
+Once these environmental variables have been set the following docker run command can be used to both download, and upload the data.
+
+
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data
 ```
 
-This command builds the Docker image, with the tag `pennylane`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
- 
-### 2. Run the container 
+By default, this will download the raw data to the local file: ```data/raw/australian_users_items.json ``` and then upload into the S3 bucket at ``` s3://2021-msia423-faulkner-michael/raw/data.json```
 
-To run the app, run from this directory: 
 
-```bash
-docker run -p 5000:5000 --name test pennylane
-```
-You should now be able to access the app at http://0.0.0.0:5000/ in your browser.
-
-This command runs the `pennylane` image as a container named `test` and forwards the port 5000 from container to your laptop so that you can access the flask app exposed through that port. 
-
-If `PORT` in `config/flaskconfig.py` is changed, this port should be changed accordingly (as should the `EXPOSE 5000` line in `app/Dockerfile`)
-
-### 3. Kill the container 
-
-Once finished with the app, you will need to kill the container. To do so: 
+To change the locations of where the files are saved locally or on S3, get_data can also take the following optional arguments:
 
 ```bash
-docker kill test 
+gzip_file_path: Where the downloaded data file is stored locally
+unzipped_file_path: Where the unzipped file is store locally
+url: The target url where the data will be downloaded from
+
+bucket_name: The name of the bucket on S3
+bucket_file_path: The path where the data file will be stored on S3.
 ```
 
-where `test` is the name given in the `docker run` command.
-
-### Example using `python3` as an entry point
-
-We have included another example of a Dockerfile, `app/Dockerfile_python` that has `python3` as the entry point such that when you run the image as a container, the command `python3` is run, followed by the arguments given in the `docker run` command after the image name. 
-
-To build this image: 
-
+Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so. To do this you would specify the bucket_name  variable as shown below.
 ```bash
- docker build -f app/Dockerfile_python -t pennylane .
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data --bucket_name="your-s3-bucket-here"
 ```
 
-then run the `docker run` command: 
 
+
+
+### Initialize the database 
+
+To create the database on RDS, five environmental variables need to be supplied to Docker. To set these variables in your environment, open your terminal and run these commands.
 ```bash
-docker run -p 5000:5000 --name test pennylane app.py
+export MYSQL_USER="YOUR_USERNAME"
+export MYSQL_PASSWORD="YOUR_PASSWORD"
+export MYSQL_HOST="localhost"
+export MYSQL_PORT="3306"
+export DATABASE_NAME="YOUR_DATABASE_NAME"
 ```
 
-The new image defines the entry point command as `python3`. Building the sample PennyLane image this way will require initializing the database prior to building the image so that it is copied over, rather than created when the container is run. Therefore, please **do the step [Create the database with a single song](#create-the-database-with-a-single-song) above before building the image**.
-
-# Testing
-
-From within the Docker container, the following command should work to run unit tests when run from the root of the repository: 
+Once the five variables above have been set, they can be passed into the Docker image with the create_db command to create the database as shown below.
 
 ```bash
-python -m pytest
-``` 
-
-Using Docker, run the following, if the image has not been built yet:
-
-```bash
- docker build -f app/Dockerfile_python -t pennylane .
+docker run -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_HOST -e MYSQL_PORT -e DATABASE_NAME steam_recommender run.py create_db
 ```
 
-To run the tests, run: 
-
+There are two alternative options to creating the database on RDS. The first is to specify the engine_string argument that defines a custom location for the database.
 ```bash
- docker run penny -m pytest
+docker run steam_recommender run.py create_db --engine_string=<database path>
 ```
+
+The final option is to not include any environmental variables, or an engine string, and the create_db function will create the database locally at the default path:
+```bash
+sqlite:///data/msia423_db.db
+```
+
+
  
