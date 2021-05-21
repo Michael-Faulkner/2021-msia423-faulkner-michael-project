@@ -55,7 +55,7 @@ def upload(data_path, bucket_name, bucket_path):
     """ Uploads data to a S3 bucket. This function does not return anything, it connects to the specified S3 bucket
         and uploads the file located at the data path variable and stores it at the bucket_path variable.
     Args:
-        data_path:obj:`String` filepath to where the data is stored locally. Should be in the format of x.gz
+        data_path:obj:`String` filepath to where the data is stored locally. Should be in the format of x.json
         bucket_name:obj:`String` name of the S3 bucket located on AWS
         bucket_path:obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
 
