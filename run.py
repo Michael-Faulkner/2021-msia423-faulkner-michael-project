@@ -23,12 +23,13 @@ if __name__ == '__main__':
     sp_data = subparsers.add_parser("get_data", description="Downloads or Uploads data from the internet or S3")
     sp_data.add_argument("--url", default="http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz",
                          help="url to acquire data from")
-    sp_data.add_argument("--gzip_file_path", default="data/raw/australian_users_items.json.gz",
-                         help="Local File path to save data file")
-    sp_data.add_argument("--unzipped_file_path", default="data/raw/australian_users_items.json",
-                         help="Local file path for unzipped data file")
+    sp_data.add_argument("--gzip_file_path", default="data/raw/australian_users_items.json.gz",help="Local File path to\
+     save data file. Should be in the format of x.gz where x is the file name")
+    sp_data.add_argument("--unzipped_file_path", default="data/raw/australian_users_items.json", help="Local file path \
+     for unzipped data file. It should be in the format of x.json where x is the file name")
     sp_data.add_argument("--bucket_name", default="2021-msia423-faulkner-michael", help="s3 bucket name")
-    sp_data.add_argument("--bucket_file_path", default='raw/australian_users_items.json', help="SQLAlchemy connection URI for database")
+    sp_data.add_argument("--bucket_file_path", default='raw/australian_users_items.json', help="Where the data is \
+    stored on S3. Should be in the format of x.json where x is the file name.")
 
     args = parser.parse_args()
     sp_used = args.subparser_name
