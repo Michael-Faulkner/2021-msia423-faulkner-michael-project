@@ -17,7 +17,10 @@ def download(url, gzip_save_path, unzipped_file_path):
         it downloads the steam/user data from the given url and saves it in the docker data folder.
     Args:
         url:obj:`String` webpage where the data is located
-        gzip_save_path:obj:`String` filepath to where the downloaded data should be saved locally
+        gzip_save_path:obj:`String` filepath to where the downloaded data should be saved locally. Should be in the \
+        format of x.gz.
+        unzipped_file_path:obj:`String` filepath to where the unzipped data will be saved. Should be in the format of \
+        x.json
 
     Returns:
         None
@@ -52,9 +55,9 @@ def upload(data_path, bucket_name, bucket_path):
     """ Uploads data to a S3 bucket. This function does not return anything, it connects to the specified S3 bucket
         and uploads the file located at the data path variable and stores it at the bucket_path variable.
     Args:
-        data_path:obj:`String` filepath to where the data is stored locally
+        data_path:obj:`String` filepath to where the data is stored locally. Should be in the format of x.gz
         bucket_name:obj:`String` name of the S3 bucket located on AWS
-        bucket_path:obj:`String` where the data should be saved on the S3 bucket
+        bucket_path:obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
 
     Returns:
         None
