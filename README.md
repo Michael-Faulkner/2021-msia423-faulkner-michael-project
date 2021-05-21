@@ -133,7 +133,10 @@ bucket_name: The name of the bucket on S3
 bucket_file_path: The path where the data file will be stored on S3.
 ```
 
-Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so.
+Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so. To do this you would specify the bucket_name  variable as shown below.
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data --bucket_name="your-s3-bucket-here"
+```
 
 
 
