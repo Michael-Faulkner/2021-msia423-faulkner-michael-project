@@ -1,0 +1,100 @@
+create_db:
+  remove_old: False
+
+
+get_data:
+  steam_game_data:
+    download:
+      url: 'http://deepx.ucsd.edu/public/jmcauley/steam/steam_games.json.gz'
+      gzip_filepath: 'data/raw/steam_games.json.gz'
+      unzipped_filepath: 'data/raw/steam_games.json'
+    upload:
+      unzipped_filepath: 'data/raw/steam_games.json'
+      bucket_name: '2021-msia423-faulkner-michael'
+      bucket_filepath: 'raw/steam_games.json'
+  steam_user_data:
+    download:
+      url: 'http://deepx.ucsd.edu/public/jmcauley/steam/australian_users_items.json.gz'
+      gzip_filepath: 'data/raw/australian_users_items.json.gz'
+      unzipped_filepath: 'data/raw/australian_users_items.json'
+    upload:
+      unzipped_filepath: 'data/raw/australian_users_items.json'
+      bucket_name: '2021-msia423-faulkner-michael'
+      bucket_filepath: 'raw/australian_users_items.json'
+
+
+process_data:
+  steam_game_data:
+    s3_download:
+      unzipped_filepath: 'data/raw/steam_games.json'
+      bucket_name: '2021-msia423-faulkner-michael'
+      bucket_filepath: 'raw/steam_games.json'
+    create_games_csv:
+      game_columns: ['id', 'app_name', 'genres', 'release_date', 'url']
+      game_id_column: 'id'
+    upload:
+      unzipped_filepath: 'data/processed/steam_games.csv'
+      bucket_name: '2021-msia423-faulkner-michael'
+      bucket_filepath: 'processed/steam_games.csv'
+    input: 'data/raw/steam_games.json'
+    output: 'data/processed/steam_games.csv'
+
+  steam_user_data:
+    s3_download:
+      unzipped_filepath: 'data/raw/australian_users_items.json'
+      bucket_name: '2021-msia423-faulkner-michael'
+      bucket_filepath: 'raw/australian_users_items.json'
+    create_users_games_csv:
+      old_item_column: 'items'
+      user_column: 'uid'
+      new_item_column: 'id'
+      rating_column: 'owned'
+      title_column: 'app_name'
+      temp_column: 'item_id'
+    input: 'data/raw/australian_users_items.json'
+    output: 'data/processed/users_games.csv'
+
+model:
+  interactions:
+    user_column: 'uid'
+    game_column: 'id'
+    rating_column: 'owned'
+    chunk_size: 10000
+    game_id_txt_filepath: 'data/processed/item_names.txt'
+  run_model:
+    n_components: 30
+    loss: 'warp'
+    epoch: 30
+    n_jobs: 1
+    random_state: 24
+  upload:
+    unzipped_filepath: 'data/results/similarities.csv'
+    bucket_name: '2021-msia423-faulkner-michael'
+    bucket_filepath: 'results/similarities.csv'
+  evaluate_model:
+    train_size: 0.8
+    n_components: 30
+    loss: 'warp'
+    epoch: 30
+    n_jobs: 1
+    random_state: 24
+    splits: 3
+  filepaths:
+    auc_txt: "data/results/auc.txt"
+    cosine_matrix: 'data/results/similarities.csv'
+    item_names: 'data/processed/item_names.txt'
+  only:
+    user_games_path: 'data/processed/users_games.csv'
+
+ingest:
+  games_csv_filepath: 'data/processed/steam_games.csv'
+  game_id_column: 'id'
+  game_name_column: 'app_name'
+  release_date_column: 'release_date'
+  url_column: 'url'
+  genres_column: 'genres'
+  remove_old: True
+
+
+pipeline_with_ingest: False
+
