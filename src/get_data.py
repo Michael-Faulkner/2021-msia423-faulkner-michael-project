@@ -4,7 +4,6 @@ import logging
 import sys
 import requests
 
-
 import boto3
 import botocore.exceptions
 

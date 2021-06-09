@@ -5,11 +5,11 @@ import pandas as pd
 from flask import Flask
 from flask import render_template, request
 
-# Initialize the Flask application
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 from src.get_data import download_s3
 from src.create_db import Games, GameManager
 
+# Initialize the Flask application
 app = Flask(__name__, template_folder="app/templates", static_folder="app/static")
 
 # Configure flask app from flask_config.py
@@ -22,11 +22,11 @@ logger = logging.getLogger(app.config["APP_NAME"])
 logger.debug('Web app log')
 
 # Initialize the database session
+game_manager = GameManager(app, engine_string=SQLALCHEMY_DATABASE_URI)
 
-
+# Download necessary data from S3
 download_s3(app.config['LOCAL_SIMILARITY_PATH'], app.config['BUCKET_NAME'], app.config['BUCKET_SIMILARITY_PATH'])
 download_s3(app.config['LOCAL_GAMES_PATH'], app.config['BUCKET_NAME'], app.config['BUCKET_GAMES_PATH'])
-game_manager = GameManager(app, engine_string=SQLALCHEMY_DATABASE_URI)
 similarities = pd.read_csv(app.config['LOCAL_SIMILARITY_PATH'])
 similarities = similarities.rename(columns={'Unnamed: 0': app.config['GAME_COLUMN']})
 game_df = pd.read_csv(app.config['LOCAL_GAMES_PATH'])
