@@ -1,9 +1,9 @@
 import gzip
 import json
-import logging.config
-
-import requests
+import logging
 import sys
+import requests
+
 
 import boto3
 import botocore.exceptions
@@ -15,12 +15,9 @@ def download(url, gzip_filepath, unzipped_filepath):
     """
     Downloads the data necessary for the app and saves it locally.
     Args:
-        url:obj:`String` webpage where the data is located
-        gzip_filepath:obj:`String` filepath to where the downloaded data should be saved locally. Should be in the \
-        format of x.gz.
-        unzipped_filepath:obj:`String` filepath to where the unzipped data will be saved. Should be in the format of \
-        x.json
-
+        url: obj:`String` webpage where the data is located
+        gzip_filepath: obj:`String` filepath to where the downloaded data should be saved locally.
+        unzipped_filepath: obj:`String` filepath to where the unzipped data will be saved.
     Returns:
         None
     """
@@ -76,9 +73,9 @@ def download_s3(unzipped_filepath, bucket_name, bucket_filepath):
     """
     Downloads data file from a S3 bucket.
     Args:
-        unzipped_filepath:obj:`String` filepath to where the data is saved locally. Should be in the format of x.json
-        bucket_name:obj:`String` name of the S3 bucket located on AWS
-        bucket_filepath:obj:`String` where the data is located on the S3 bucket. Should be in the format of x.json
+        unzipped_filepath: obj:`String` filepath to where the data is saved locally. Should be in the format of x.json
+        bucket_name: obj:`String` name of the S3 bucket located on AWS
+        bucket_filepath: obj:`String` where the data is located on the S3 bucket. Should be in the format of x.json
 
     Returns:
         None
@@ -119,9 +116,9 @@ def upload(unzipped_filepath, bucket_name, bucket_filepath):
     Uploads data to a S3 bucket. This function does not return anything, it connects to the specified S3 bucket
     and uploads the file located at the data path variable and stores it at the bucket_path variable.
     Args:
-        unzipped_filepath:obj:`String` filepath to where the data is stored locally. Should be in the format of x.json
-        bucket_name:obj:`String` name of the S3 bucket located on AWS
-        bucket_filepath:obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
+        unzipped_filepath: obj:`String` filepath to where the data is stored locally. Should be in the format of x.json
+        bucket_name: obj:`String` name of the S3 bucket located on AWS
+        bucket_filepath: obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
 
     Returns:
         None

@@ -1,4 +1,4 @@
-import logging.config
+import logging
 import sys
 
 import pymysql.err
@@ -32,8 +32,8 @@ def create_db(engine_string, remove_old):
         function does not return anything, instead it creates a database instance at the specified location that
         contains the Games, Players, and OwnedGames tables.
     Args:
-        engine_string: :obj:`String` Defines the connection to the SQL database
-        remove_old: :obj:`Boolean` Specifies whether the old table should be deleted to avoid adding duplicates
+        engine_string: obj:`String` Defines the connection to the SQL database
+        remove_old: obj:`Boolean` Specifies whether the old table should be deleted to avoid adding duplicates
     Returns:
         None
     """
