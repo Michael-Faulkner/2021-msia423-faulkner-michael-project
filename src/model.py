@@ -51,6 +51,7 @@ def cosine_similarity_matrix(item_embeddings, item_names):
     similarities = cosine_similarity(df_item_norm_sparse)
     similarity_matrix = pd.DataFrame(similarities)
 
+    # Name columns and rows with game ids to match up with game info dataframe after querying
     similarity_matrix.columns = item_names
     similarity_matrix.index = item_names
 
@@ -81,6 +82,7 @@ def evaluate_model(interactions, train_size, n_components, loss, epoch, n_jobs, 
     interactions = interactions.tocsr()[:interactions_size, :]
 
     try:
+        # Create dense matrix in order to fulfil requirements by LightFM's AUC evaluation
         arr_interactions = interactions.todense()
 
     except MemoryError:

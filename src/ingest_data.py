@@ -25,17 +25,22 @@ def ingest_data(engine_string, remove_old, games_csv_filepath, game_id_column, g
     Returns:
         None
     """
+    # Remove the old database to prevent creating duplicate rows
     if remove_old:
         logger.info("Removing old database at %s", engine_string)
         create_db(engine_string, remove_old)
+
     games = pd.read_csv(games_csv_filepath)
+    # Fill NA values with empty string to prevent errors when filling database
     games = games.fillna(' ')
     gm = GameManager(engine_string=engine_string)
+
     ids = games[game_id_column].tolist()
     app_names = games[game_name_column].tolist()
     release_dates = games[release_date_column].tolist()
     urls = games[url_column].tolist()
     genres = games[genres_column].tolist()
+
     logger.info("Ingesting data into database located at %s", engine_string)
     try:
         for i in range(len(games)):

@@ -40,10 +40,12 @@ def create_games_csv(df, game_columns, game_id_column):
     Returns:
         df: obj: `pandas DataFrame` The game dataframe that contains information on each Steam game
     """
-    orig_df_len = len(df)
     if not isinstance(df, pd.DataFrame):
         logger.error("%s is not a Pandas Dataframe object", df)
         raise TypeError("Provided argument `df` is not a Panda's DataFrame object")
+
+    orig_df_len = len(df)
+
     try:
         df = df[game_columns]
         df = df.dropna(subset=[game_id_column])
@@ -86,16 +88,20 @@ def create_user_games_csv(user_df, game_df, old_item_column, user_column, new_it
     if not isinstance(user_df, pd.DataFrame):
         logger.error("%s is not a Pandas Dataframe object", user_df)
         raise TypeError("Provided argument `df` is not a Panda's DataFrame object")
+
     try:
+        # Find items from list of dictionaries in the old item column
         user_df[temp_column] = user_df[old_item_column].apply(lambda x: [x[index][temp_column] for
                                                                          index, _ in enumerate(x)])
         user_df[user_column] = np.arange(len(user_df))
         df = user_df[[user_column, temp_column]]
         lst_col = temp_column
         logger.debug("Creating long dataframe from user_games data")
+        # Expand the list of items to create a long version of the dataframe
         df = pd.DataFrame({col: np.repeat(df[col].values, df[lst_col].str.len())
                            for col in df.columns.difference([lst_col])
                            }).assign(**{lst_col: np.concatenate(df[lst_col].values)})[df.columns.tolist()]
+        # Specify that the game is owned with a "1"
         df[rating_column] = np.ones(shape=df.shape[0])
         df[temp_column] = df[temp_column].astype(int)
         df = df.rename(columns={temp_column: new_item_column})
@@ -139,10 +145,12 @@ def make_sparse(df, user_column, game_column, rating_column, chunk_size):
         raise TypeError("Provided argument `df` is not a Panda's DataFrame object")
 
     items = sorted(df[game_column].unique())
+    # Create empty dataframe to add rows to during the generator function
     df_base = pd.DataFrame(columns=[user_column] + items).set_index(user_column)
     users = sorted(df[user_column].unique())
     chunks = len(users) // chunk_size + 1
     logger.debug("Processing data in %d chunks", chunks)
+
     try:
         for i in range(chunks):
             user_chunk = users[i * chunk_size:(i + 1) * chunk_size]
@@ -199,6 +207,7 @@ def create_interaction_matrix(df, user_column, game_column, rating_column, chunk
 
     sparse_matrix = sparse.eye(0, num_columns)
     logger.debug('Creating sparse matrix for model use')
+    # Generator function to conserve memory
     for user in make_sparse(df, user_column, game_column, rating_column, chunk_size):
         sparse_matrix = sparse.vstack([sparse_matrix, user])
 
