@@ -159,7 +159,7 @@ docker build -f app/Dockerfile_App -t webapp .
 
 ## Environmental Setup
 
-Before creating any Docker commands the following enviromental variables should be exported to your current terminal/command line instace.
+Before creating any Docker commands the following enviromental variables should be exported to your current terminal/command line environment.
 
 The AWS keys are used to access the S3 bucket which is need for the data acquisition, model pipeline, and webapp portion of the project.
 
@@ -177,7 +177,7 @@ export SQLALCHEMY_DATABASE_URI="DATABASE_ENGINE_STRING"
 
 ## Data Acquistion
 
-These commands will make a request to the target url containing the Steam game and Steam user data. The data will be downloaded, unzipped, and parsed into a JSON format. The two JSON files will then be uploaded to the S3 bucket specified in the ```config.yaml``` file. Both the AWS crednetials and SQLALCHEMY_DATABASE_URI are needed for this step.
+These commands will make a request to the target url containing the Steam game and Steam user data. The data will be downloaded, unzipped, and parsed into a JSON format. The two JSON files will then be uploaded to the S3 bucket specified in the ```config.yaml``` file. Both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed for this step.
 
 
 #### Makefile:
@@ -194,7 +194,7 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_
 There are three choices when it comes to running portions of the model pipeline: data procesing, model building, and the entire pipeline. 
 
 ### Full Pipeline
-The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to True, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, if it is set to false, only the AWS credentials need to be set for this step.
+The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to ```True```, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, by default this is set to ```False```, and only the AWS credentials need to be provided for this step.
 
 #### Makefile:
 ```bash
@@ -289,3 +289,7 @@ make clean
 ### Model Reproducibility
 
 There is one variable in the config.yaml file that should be noted if model reproducibility is a top priority. The first is the ```n_jobs``` variable as this controls the number of cores used during model training. In order for the model to be perfectly reproduicble, ```n_jobs``` needs to be set to ```1```. This will make the model take significantly longer to train, but the results will be the same each time the pipeline is run.
+
+### Memory
+
+Due to the small memory limit on my personal laptop, generator functions were used throughout the project to keep the memory use low. In spite of this, Docker needs to have at least 5 GB of free memory in order to successfully get through all portions of the model pipeline. If you are running the pipeline and getting Code 137 from Docker, this memory limit might need to be increased. 
