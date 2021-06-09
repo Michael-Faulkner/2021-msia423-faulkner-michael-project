@@ -131,6 +131,9 @@ def upload(unzipped_filepath, bucket_name, bucket_filepath):
         bucket.upload_file(unzipped_filepath, bucket_filepath)
         logger.info("Data has been successfully uploaded to S3 and can be found at %s", bucket_filepath)
 
+    except boto3.exceptions.S3UploadFailedError:
+        logger.warning('Was not able to upload the file to S3, file will only be saved locally')
+
     except botocore.exceptions.NoCredentialsError as e:
         logger.error('%s, check to make sure your aws credentials are correctly sourced', e)
         sys.exit(3)
