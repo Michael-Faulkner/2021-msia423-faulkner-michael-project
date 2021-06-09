@@ -1,25 +1,24 @@
 import gzip
+import json
 import logging.config
 
 import requests
-import shutil
 import sys
 
 import boto3
 import botocore.exceptions
 
-logging.config.fileConfig("config/logging/local.conf")
 logger = logging.getLogger(__name__)
 
 
-def download(url, gzip_save_path, unzipped_file_path):
-    """ Downloads the data necessary for the app and saves it locally. This function does not return anything, instead
-        it downloads the steam/user data from the given url and saves it in the docker data folder.
+def download(url, gzip_filepath, unzipped_filepath):
+    """
+    Downloads the data necessary for the app and saves it locally.
     Args:
         url:obj:`String` webpage where the data is located
-        gzip_save_path:obj:`String` filepath to where the downloaded data should be saved locally. Should be in the \
+        gzip_filepath:obj:`String` filepath to where the downloaded data should be saved locally. Should be in the \
         format of x.gz.
-        unzipped_file_path:obj:`String` filepath to where the unzipped data will be saved. Should be in the format of \
+        unzipped_filepath:obj:`String` filepath to where the unzipped data will be saved. Should be in the format of \
         x.json
 
     Returns:
@@ -28,11 +27,23 @@ def download(url, gzip_save_path, unzipped_file_path):
 
     # Download the raw data from given url
     try:
-        logger.info("Beginning download from %s", url)
+        logger.debug("Beginning download from %s", url)
         r = requests.get(url)
-        with open(gzip_save_path, "wb") as f:
+        with open(gzip_filepath, "wb") as f:
             f.write(r.content)
-        logger.info("Data has been successfully downloaded and saved to %s", gzip_save_path)
+        logger.info("Data has been successfully downloaded and saved to %s", gzip_filepath)
+
+    except requests.exceptions.ConnectTimeout as e:
+        logger.error('%s, The request timed out while trying to connect to the remote server', e)
+        sys.exit(3)
+
+    except requests.exceptions.InvalidURL as e:
+        logger.error('%s, The specified URL was invalid', e)
+        sys.exit(3)
+
+    except requests.exceptions.ConnectionError as e:
+        logger.error('%s, There was a connection error, check your internet connection and try again', e)
+        sys.exit(3)
 
     except Exception as e:
         logger.error(e)
@@ -40,24 +51,77 @@ def download(url, gzip_save_path, unzipped_file_path):
 
     # Unzip the downloaded file and save the unzipped file
     try:
-        logger.info("Unzipping gzip file")
-        with gzip.open(gzip_save_path, 'rb') as f_in:
-            with open(unzipped_file_path, 'wb') as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        logger.info("Gzip file has been unzipped and saved to %s", unzipped_file_path)
+        dict_list = []
+        logger.debug('Parsing gzip file with generator function')
+        for line in parse(gzip_filepath):
+            dict_list.append(line)
+        logger.debug("%s has %d rows", unzipped_filepath, len(dict_list))
+
+        if len(dict_list) == 0:
+            logger.warning("Parsed data contains 0 rows")
+
+        with open(unzipped_filepath, 'w') as f:
+            json.dump(dict_list, f)
+        logger.info("Gzip file has been unzipped and saved to %s", unzipped_filepath)
+
+    except json.JSONDecodeError as e:
+        logger.error("%s, could not parse json file. Make sure the file is in the correct format", e)
 
     except Exception as e:
         logger.error(e)
         sys.exit(3)
 
 
-def upload(data_path, bucket_name, bucket_path):
-    """ Uploads data to a S3 bucket. This function does not return anything, it connects to the specified S3 bucket
-        and uploads the file located at the data path variable and stores it at the bucket_path variable.
+def download_s3(unzipped_filepath, bucket_name, bucket_filepath):
+    """
+    Downloads data file from a S3 bucket.
     Args:
-        data_path:obj:`String` filepath to where the data is stored locally. Should be in the format of x.json
+        unzipped_filepath:obj:`String` filepath to where the data is saved locally. Should be in the format of x.json
         bucket_name:obj:`String` name of the S3 bucket located on AWS
-        bucket_path:obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
+        bucket_filepath:obj:`String` where the data is located on the S3 bucket. Should be in the format of x.json
+
+    Returns:
+        None
+    """
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucket_name)
+
+    try:
+        bucket.download_file(bucket_filepath, unzipped_filepath)
+        logger.info('Data downloaded from %s to %s', bucket_filepath, unzipped_filepath)
+
+    except botocore.exceptions.NoCredentialsError as e:
+        logger.error('%s, check to make sure your aws credentials are correctly sourced', e)
+        sys.exit(3)
+
+    except botocore.exceptions.ConnectionError as e:
+        logger.error('%s, Could not connect to the s3 bucket. Check your internet connection', e)
+        sys.exit(3)
+
+    except botocore.exceptions.DataNotFoundError as e:
+        logger.error('%s, could not find data file on S3. Check to make sure the path is correct', e)
+        sys.exit(3)
+
+    except Exception as e:
+        logger.error(e)
+        sys.exit(3)
+
+
+def parse(path):
+    """Generator function that yields one unzipped line of the gzip file"""
+    gzip_file = gzip.open(path, 'r')
+    for line in gzip_file:
+        yield eval(line)
+
+
+def upload(unzipped_filepath, bucket_name, bucket_filepath):
+    """
+    Uploads data to a S3 bucket. This function does not return anything, it connects to the specified S3 bucket
+    and uploads the file located at the data path variable and stores it at the bucket_path variable.
+    Args:
+        unzipped_filepath:obj:`String` filepath to where the data is stored locally. Should be in the format of x.json
+        bucket_name:obj:`String` name of the S3 bucket located on AWS
+        bucket_filepath:obj:`String` where the data should be saved on the S3 bucket. Should be in the format of x.json
 
     Returns:
         None
@@ -65,15 +129,18 @@ def upload(data_path, bucket_name, bucket_path):
 
     # Upload Data to S3
     try:
-        logger.info("Beginning data upload to %s", bucket_name)
+        logger.debug("Beginning data upload to %s", bucket_name)
         s3 = boto3.resource("s3")
         bucket = s3.Bucket(bucket_name)
-        bucket.upload_file(data_path, bucket_path)
-        logger.info("Data has been successfully uploaded and can be found at %s", bucket_path)
+        bucket.upload_file(unzipped_filepath, bucket_filepath)
+        logger.info("Data has been successfully uploaded to S3 and can be found at %s", bucket_filepath)
 
-    except botocore.exceptions.NoCredentialsError:
-        logger.error("Your AWS credentials were not found. Be sure they were specified in the environment and passed "
-                     "correctly into the Docker run command")
+    except botocore.exceptions.NoCredentialsError as e:
+        logger.error('%s, check to make sure your aws credentials are correctly sourced', e)
+        sys.exit(3)
+
+    except botocore.exceptions.ConnectionError as e:
+        logger.error('%s, Could not connect to the s3 bucket. Check your internet connection', e)
         sys.exit(3)
 
     except Exception as e:
