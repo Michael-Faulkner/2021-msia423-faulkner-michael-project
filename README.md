@@ -56,16 +56,21 @@ Business Metrics:
 │   ├── static/                       <- CSS, JS files that remain static
 │   ├── templates/                    <- HTML (or other code) that is templated and changes based on a set of inputs
 │   ├── boot.sh                       <- Start up script for launching app in Docker container.
-│   ├── Dockerfile                    <- Dockerfile for building image to run app  
+│   ├── setup.sh                      <- Start up script for setting up database and downloading raw data.
+│   ├── Dockerfile_Setup              <- Dockerfile for building image to run setup
+│   ├── Dockerfile_Pipeline           <- Dockerfile for building image to run model pipeline
+│   ├── Dockerfile_App                <- Dockerfile for building image to run app
 │
 ├── config                            <- Directory for configuration files 
 │   ├── local/                        <- Directory for keeping environment variables and other local configurations that *do not sync** to Github 
 │   ├── logging/                      <- Configuration of python loggers
-│   ├── flaskconfig.py                <- Configurations for Flask API 
+│   ├── flaskconfig.py                <- Configurations for Flask API
+│   ├── config.yaml                   <- Configurations setup and model pipeline
 │
-├── data                              <- Folder that contains data used or generated. Only the external/ and sample/ subdirectories are tracked by git. 
-│   ├── external/                     <- External data sources, usually reference data,  will be synced with git
-│   ├── sample/                       <- Sample data used for code development and testing, will be synced with git
+├── data                              <- Folder that contains data used or generated. 
+│   ├── raw/                          <- Raw data sources, downloaded from the internet or S3
+│   ├── processed/                    <- Processed raw data sources
+│   ├── results/                      <- Model results
 │
 ├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder 
 │
@@ -83,90 +88,204 @@ Business Metrics:
 │
 ├── reference/                        <- Any reference material relevant to the project
 │
-├── src/                              <- Source data for the project 
+├── src/                              <- Source data for the project
+│   ├── create_db.py                  <- Script to create database and tables
+│   ├── get_data.py                   <- Script to download data from website. Also includes downloading to/from S3
+│   ├── ingest_data.py                <- Script to put data into the database
+│   ├── model.py                      <- Script to build the LightFM model
+│   ├── process_data.py               <- Script to process raw data
 │
-├── test/                             <- Files necessary for running model tests (see documentation below) 
+├── test/                             <- Files necessary for running model tests (see documentation below)
+│   ├── outputs/                      <- outputs from tests
+│   ├── test_cosine_similarity_matrix <- Unit tests for cosine similarity matrix
+│   ├── test_create_games_csv         <- Unit tests for create games csv
+│   ├── test_create_interaction_matrix<- Unit tests for create interaction matrix
+│   ├── test_create_user_games_csv    <- Unit tests for create user games csv
+│   ├── test_make_sparse              <- Unit tests for make sparse
 │
 ├── app.py                            <- Flask wrapper for running the model 
 ├── run.py                            <- Simplifies the execution of one or more of the src scripts  
-├── requirements.txt                  <- Python package dependencies 
+├── requirements.txt                  <- Python package dependencies
+├── Makefile                          <- Command line shortcuts to run docker commands
+
 ```
 
-### Building the Docker image
+
+## Building Docker Images
 
 
+There are three dockerfiles used for this webapp, one handles the data acquisition, another handles the model pipeline, and the final one is responsible for launching the webapp. If starting from scratch all three must be built and ran in order for the app to work. If you have access to my S3 bucket, starting with any of the Docker commands will work as the program will downloaded the needed files from S3. 
 
-The Dockerfile used for data acquisition, uploading to s3, and creating the database is found in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
+### Data Acquisition Docker Image
+
+This Dockerfile is used for data acquisition, uploading to s3, and creating the database/tables at the specified address.
+
+#### Makefile:
 ```bash
- docker build -f app/Dockerfile_Pipeline -t steam_recommender .
+make setup
+```
+#### Docker:
+```bash
+docker build -f app/Dockerfile_Setup -t setup .
 ```
 
-This command builds the Docker image, with the tag `steam_recommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
 
-### Uploading data to S3
-Before downloading the data AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY should be environmental variables in your current terminal session. They can be specified by running the code below.
+### Model Pipeline Docker Image
+
+This Dockerfile is responsible for running the model pipeline, data ingestion, and unit testing.
+
+#### Makefile:
+```bash
+make pipeline
+```
+#### Docker:
+```bash
+docker build -f app/Dockerfile_Pipeline -t pipeline .
+```
+
+### Webapp Docker Image
+
+This Dockerfile is used for launching and maintaining the webapp.
+
+#### Makefile:
+```bash
+make app
+```
+#### Docker:
+```bash
+docker build -f app/Dockerfile_App -t webapp .
+```
+
+## Environmental Setup
+
+Before creating any Docker commands the following enviromental variables should be exported to your current terminal/command line instace.
+
+The AWS keys are used to access the S3 bucket which is need for the data acquisition, model pipeline, and webapp portion of the project.
 
 ```bash
 export AWS_ACCESS_KEY_ID=<your_aws_access_key_id>
 export AWS_SECRET_ACCESS_KEY=<your_aws_secret_access_key> 
 ````
 
-Once these environmental variables have been set the following docker run command can be used to both download, and upload the data.
-
-
-```bash
-docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data
-```
-
-By default, this will download the raw data to the local file: ```data/raw/australian_users_items.json ``` and then upload into the S3 bucket at ``` s3://2021-msia423-faulkner-michael/raw/data.json```
-
-
-To change the locations of where the files are saved locally or on S3, get_data can also take the following optional arguments:
+The ```SQLALCHEMY_DATABASE_URI``` is an optional argument that creates the connection between the python script and the database. It should be of the form ```{dialect}://{user}:{pw}@{host}:{port}/{db}```. If no ```SQLALCHEMY_DATABASE_URI``` is specified the database will be created locally at ```sqlite:///data/msia423_db.db``` and you can ignore any mentions of requiring ```SQLALCHEMY_DATABASE_URI``` in the following commands.
 
 ```bash
-gzip_file_path: Where the downloaded data file is stored locally
-unzipped_file_path: Where the unzipped file is store locally
-url: The target url where the data will be downloaded from
-
-bucket_name: The name of the bucket on S3
-bucket_file_path: The path where the data file will be stored on S3.
-```
-
-Changing the url or any of the file_path variables is not recommended. However, if you wish to save the data to your own bucket on S3, changing the bucket_name variable will allow you to do so. To do this you would specify the bucket_name  variable as shown below.
-```bash
-docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY steam_recommender run.py get_data --bucket_name="your-s3-bucket-here"
+export SQLALCHEMY_DATABASE_URI="DATABASE_ENGINE_STRING"
 ```
 
 
+## Data Acquistion
+
+These commands will make a request to the target url containing the Steam game and Steam user data. The data will be downloaded, unzipped, and parsed into a JSON format. The two JSON files will then be uploaded to the S3 bucket specified in the ```config.yaml``` file. Both the AWS crednetials and SQLALCHEMY_DATABASE_URI are needed for this step.
 
 
-### Initialize the database 
-
-To create the database on RDS, five environmental variables need to be supplied to Docker. To set these variables in your environment, open your terminal and run these commands.
+#### Makefile:
 ```bash
-export MYSQL_USER="YOUR_USERNAME"
-export MYSQL_PASSWORD="YOUR_PASSWORD"
-export MYSQL_HOST="localhost"
-export MYSQL_PORT="3306"
-export DATABASE_NAME="YOUR_DATABASE_NAME"
+make raw
+```
+#### Docker:
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI --mount type=bind,source=$(pwd),target=/app/ setup
 ```
 
-Once the five variables above have been set, they can be passed into the Docker image with the create_db command to create the database as shown below.
+## Model Pipeline
 
+There are three choices when it comes to running portions of the model pipeline: data procesing, model building, and the entire pipeline. 
+
+### Full Pipeline
+The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to True, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, if it is set to false, only the AWS credentials need to be set for this step.
+
+#### Makefile:
 ```bash
-docker run -e MYSQL_USER -e MYSQL_PASSWORD -e MYSQL_HOST -e MYSQL_PORT -e DATABASE_NAME steam_recommender run.py create_db
+make full
+```
+#### Docker:
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI--mount type=bind,source=$(pwd),target=/app/ pipeline run.py full --config=conf
 ```
 
-There are two alternative options to creating the database on RDS. The first is to specify the engine_string argument that defines a custom location for the database.
+### Data Processing
+
+If only processing the raw data to csv file is desired, these commands can be run to only run the data processing steps. To download the raw data from the S3 bucket, AWS credentials are needed.
+
+#### Makefile:
 ```bash
-docker run steam_recommender run.py create_db --engine_string=<database path>
+make process
+```
+#### Docker:
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY --mount type=bind,source=$(pwd),target=/app/ pipeline run.py process_data --config=config/config.yaml
 ```
 
-The final option is to not include any environmental variables, or an engine string, and the create_db function will create the database locally at the default path:
+### Model Building
+
+Once the data has been processed, the model can be built using these commands. Since the results are saved to S3 for the webapp to use, AWS credentials are needed. 
+
+#### Makefile:
 ```bash
-sqlite:///data/msia423_db.db
+make model
+```
+#### Docker:
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY --mount type=bind,source=$(pwd),target=/app/ pipeline run.py model --config=config/config.yaml
 ```
 
+### Ingesting Data
 
- 
+If the user decides not to ingest data automatically during the pipeline due to the amount of time data ingestion can take (30+ mins), data ingestion can be conducted using the following commands. The data needs to be saved from the data processing stages so the script can open it and start populating the databse. Only the ```SQLALCHEMY_DATABASE_URI``` needs to be specified for this step.
+
+#### Makefile:
+```bash
+make ingest
+```
+#### Docker:
+```bash
+docker run -e SQLALCHEMY_DATABASE_URI --mount type=bind,source=$(pwd),target=/app/ pipeline run.py ingest --config=config/config.yaml
+```
+
+### Unit Tests
+Tests exist to make sure the data processing steps are performing correctly. To run them either of the following commands will work.
+
+#### Makefile:
+```bash
+make tests
+```
+#### Docker:
+```bash
+docker run pipeline -m pytest
+```
+
+## Web App
+
+To launch the web app, either of the commands will work. Please note that the files uploaded to S3 during the model pipeline are required for the web app to launch. Since access to S3 and the database are needed for this process, both the AWS credentials and ```SQLALCHEMY_DATABASE_URI``` should be sourced.
+
+#### Makefile:
+```bash
+make flask
+```
+#### Docker:
+```bash
+docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI -p 5000:5000 --mount type=bind,source=$(pwd),target=/app/ webapp
+```
+
+## Other Useful Tips
+
+### Clean-up
+Since intermediate files are created during the different model pipeline steps, this clean up command clears the raw, processed, and results file. In addition it cleans up artifacts produced by one of the tests. 
+
+#### Makefile:
+```bash
+make clean
+```
+#### Docker:
+```bash
+	rm data/raw/*
+	rm data/processed/*
+	rm data/results/*
+	rm tests/outputs/*
+```
+
+### Model Reproducibility
+
+There is one variable in the config.yaml file that should be noted if model reproducibility is a top priority. The first is the ```n_jobs``` variable as this controls the number of cores used during model training. In order for the model to be perfectly reproduicble, ```n_jobs``` needs to be set to ```1```. This will make the model take significantly longer to train, but the results will be the same each time the pipeline is run.
