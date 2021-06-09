@@ -24,8 +24,8 @@ data/processed/steam_games.csv: config/config.yaml
 
 process: data/processed/steam_games.csv data/processed/users_games.csv
 
-ingest:
-	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI --mount type=bind,source="$(shell pwd)",target=/app/ pipeline run.py ingest --config=config/config.yaml
+ingest: data/processed/steam_games.csv
+	docker run -e SQLALCHEMY_DATABASE_URI --mount type=bind,source="$(shell pwd)",target=/app/ pipeline run.py ingest --config=config/config.yaml
 
 data/results/similarities.csv: data/processed/users_games.csv data/processed/steam_games.csv
 	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY --mount type=bind,source="$(shell pwd)",target=/app/ pipeline run.py model --config=config/config.yaml
