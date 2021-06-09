@@ -33,7 +33,7 @@ data/results/similarities.csv: data/processed/users_games.csv data/processed/ste
 model: data/results/similarities.csv
 
 full:
-	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI--mount type=bind,source="$(shell pwd)",target=/app/ pipeline run.py full --config=config/config.yaml
+	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI --mount type=bind,source="$(shell pwd)",target=/app/ pipeline run.py full --config=config/config.yaml
 
 
 app:
