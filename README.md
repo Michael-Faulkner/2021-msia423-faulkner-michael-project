@@ -194,7 +194,7 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_
 There are three choices when it comes to running portions of the model pipeline: data procesing, model building, and the entire pipeline. 
 
 ### Full Pipeline
-The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to ```True```, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, if it is set to ```False```, only the AWS credentials need to be set for this step.
+The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to ```True```, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, by default this is set to ```False```, and only the AWS credentials need to be provided for this step.
 
 #### Makefile:
 ```bash
