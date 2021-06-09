@@ -289,3 +289,7 @@ make clean
 ### Model Reproducibility
 
 There is one variable in the config.yaml file that should be noted if model reproducibility is a top priority. The first is the ```n_jobs``` variable as this controls the number of cores used during model training. In order for the model to be perfectly reproduicble, ```n_jobs``` needs to be set to ```1```. This will make the model take significantly longer to train, but the results will be the same each time the pipeline is run.
+
+### Memory
+
+Due to the small memory limit on my personal laptop, generator functions were used throughout the project to keep the memory use low. In spite of this, Docker needs to have at least 5 GB of free memory in order to successfully get through all portions of the model pipeline. If you are running the pipeline and getting Code 137 from Docker, this memory limit might need to be increased. 
