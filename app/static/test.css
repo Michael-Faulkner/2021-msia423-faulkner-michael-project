@@ -1,0 +1,24 @@
+body {
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Open Sans', sans-serif;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom, #1f2224, #292d32);
+  color: #e5e8e3;
+  font-size: 16px;
+  text-align: center;
+}
+a:link{
+  color: #1b98ff;
+}
+a:visited{
+  color: #1b98ff;
+}
+img {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    left:0;
+    top:0;
+}
