@@ -99,7 +99,7 @@ Business Metrics:
 The Dockerfile used for data acquisition, uploading to s3, and creating the database is found in the `app/` folder. To build the image, run from this directory (the root of the repo): 
 
 ```bash
- docker build -f app/Dockerfile -t steam_recommender .
+ docker build -f app/Dockerfile_Pipeline -t steam_recommender .
 ```
 
 This command builds the Docker image, with the tag `steam_recommender`, based on the instructions in `app/Dockerfile` and the files existing in this directory.
