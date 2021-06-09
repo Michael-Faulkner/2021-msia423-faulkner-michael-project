@@ -6,7 +6,14 @@ APP_NAME = "steam-recommender"
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 HOST = "0.0.0.0"
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
-MAX_ROWS_SHOW = 100
+MAX_ROWS_SHOW = 50
+MAX_RECOMMENDATIONS = 25
+GAME_COLUMN = 'id'
+BUCKET_SIMILARITY_PATH = 'results/similarities.csv'
+LOCAL_SIMILARITY_PATH = 'data/results/similarities.csv'
+BUCKET_GAMES_PATH = 'processed/steam_games.csv'
+LOCAL_GAMES_PATH = 'data/processed/steam_games.csv'
+BUCKET_NAME = '2021-msia423-faulkner-michael'
 
 # Connection string
 DB_HOST = os.environ.get('MYSQL_HOST')

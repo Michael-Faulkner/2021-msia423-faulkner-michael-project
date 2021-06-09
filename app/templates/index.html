@@ -2,42 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="static/basic.css" rel="stylesheet">
+    <link href="static/test.css" rel="stylesheet">
 </head>
+<style>
+    #content {
+        position: relative;
+    }
+    #content img {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+    }
+</style>
 
+<div id="content">
+    <img src="https://cdn.freebiesupply.com/images/large/2x/steam-logo-transparent.png" class="ribbon" height="100" width="100" style="background:transparent;"/>
+</div>
 <body>
-    <h3>
-         <a href = "{{ url_for('index') }}">Penny Lane Music Recommender</a>
-    </h3>
+    <h1>
+         <a href = "{{ url_for('index') }}">The Gaming Encyclopedia</a>
+
+    </h1>
+        <form action="{{ url_for('show_cluster_or_id') }}" method=post class=show-cluster-or-id>
+      <dl>
+          <input type=text size=25 name=game_id placeholder="Game ID">
+          <input type=text size=25 name=game_name placeholder="Game Name">
+          <input type=submit class="btn btn-primary" value=Submit>
+      </dl>
+    </form>
 
     <hr/>
-    <table>
+    <table style="margin-left:auto;margin-right:auto;">
          <thead>
             <tr>
+               <th>Game ID</th>
                <th>Title</th>
-               <th>Artist</th>
-               <th>Album</th>
+               <th>Genres</th>
+                <th>Release Date</th>
+                <th>URL</th>
             </tr>
          </thead>
 
          <tbody>
-            {% for track in tracks %}
+            {% for game in games %}
                <tr>
-                   <td>{{ track.title }}</td>
-                   <td>{{ track.artist }}</td>
-                   <td>{{ track.album }}</td>
+                   <td>{{ game.game_id }}</td>
+                   <td>{{ game.title }}</td>
+                   <td>{{ game.genre }}</td>
+                   <td>{{ game.release_date }}</td>
+                   <td><a href={{ game.url }}>{{ game.url }}</a></td>
                </tr>
             {% endfor %}
          </tbody>
       </table>
-      <form action="{{ url_for('add_entry') }}" method=post class=add-entry>
-      <dl>
-        <input type=text size=15 name=title placeholder="Title">
-        <input type=text size=15 name=artist placeholder="Artist">
-        <input type=text size=15 name=album placeholder="Album">
-        <input type=submit value=Add>
-      </dl>
-    </form>
+
 
 </body>
 </html>

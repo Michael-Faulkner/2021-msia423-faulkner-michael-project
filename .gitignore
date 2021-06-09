@@ -9,9 +9,9 @@ __pycache__/
 
 .awsconfig
 .mysqlconfig
-data/*
-!data/raw/
-!data/sample/
-!data/external/
+copilot/
+
+data/
+
 config/local
 !.gitkeep

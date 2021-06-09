@@ -7,3 +7,8 @@ pytest==5.4.2
 boto3>=1.17.66
 requests>=2.24.0
 botocore>=1.20.66
+pandas>=1.1.2
+scipy>=1.5.2
+scikit-learn>=0.23.2
+lightfm>=1.16
+numpy>=1.19.1
