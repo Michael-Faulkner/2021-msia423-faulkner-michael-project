@@ -2,16 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="static/basic.css" rel="stylesheet">
+    <link href="static/test.css" rel="stylesheet">
 </head>
 
+<style>
+    #content {
+        position: relative;
+    }
+    #content img {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+    }
+</style>
+
+<div id="content">
+    <img src="https://cdn.freebiesupply.com/images/large/2x/steam-logo-transparent.png" class="ribbon" height="100" width="100" style="background:transparent;"/>
+</div>
 <body>
-    <h3>
-         <a href = "{{ url_for('index') }}">Penny Lane Music Recommender</a>
-    </h3>
+    <h1>
+         <a href = "{{ url_for('index') }}">The Gaming Encyclopedia</a>
+
+    </h1>
 
     <div class="alert alert-danger" role="alert">
-  <p class="alert-link">We're sorry. There was a problem accessing the database. Please try back later. </p>
+  <p class="alert-link">Either the game id/title does not exist in the database or the database is down. Please try a different game or try again later. </p>
     </div>
 
 </body>
