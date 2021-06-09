@@ -39,14 +39,14 @@ full:
 app:
 	docker build -f app/Dockerfile_App -t webapp .
 
-flask: data/results/similarities.csv data/processed/steam_games.csv
+flask:
 	docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI -p 5000:5000 --mount type=bind,source="$(shell pwd)",target=/app/ webapp
 
 
 clean:
-	rm data/results/*
+	rm data/raw/*
 	rm data/processed/*
-	# rm data/raw/*
+	rm data/results/*
 	rm tests/outputs/*
 
 tests:
