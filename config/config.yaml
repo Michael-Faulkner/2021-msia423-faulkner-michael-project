@@ -93,7 +93,7 @@ ingest:
   release_date_column: 'release_date'
   url_column: 'url'
   genres_column: 'genres'
-  remove_old: True
+  remove_old: False
 
 
 pipeline_with_ingest: False
