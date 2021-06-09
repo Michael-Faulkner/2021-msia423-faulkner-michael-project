@@ -159,7 +159,7 @@ docker build -f app/Dockerfile_App -t webapp .
 
 ## Environmental Setup
 
-Before creating any Docker commands the following enviromental variables should be exported to your current terminal/command line instace.
+Before creating any Docker commands the following enviromental variables should be exported to your current terminal/command line environment.
 
 The AWS keys are used to access the S3 bucket which is need for the data acquisition, model pipeline, and webapp portion of the project.
 
@@ -177,7 +177,7 @@ export SQLALCHEMY_DATABASE_URI="DATABASE_ENGINE_STRING"
 
 ## Data Acquistion
 
-These commands will make a request to the target url containing the Steam game and Steam user data. The data will be downloaded, unzipped, and parsed into a JSON format. The two JSON files will then be uploaded to the S3 bucket specified in the ```config.yaml``` file. Both the AWS crednetials and SQLALCHEMY_DATABASE_URI are needed for this step.
+These commands will make a request to the target url containing the Steam game and Steam user data. The data will be downloaded, unzipped, and parsed into a JSON format. The two JSON files will then be uploaded to the S3 bucket specified in the ```config.yaml``` file. Both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed for this step.
 
 
 #### Makefile:
@@ -194,7 +194,7 @@ docker run -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_
 There are three choices when it comes to running portions of the model pipeline: data procesing, model building, and the entire pipeline. 
 
 ### Full Pipeline
-The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to True, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, if it is set to false, only the AWS credentials need to be set for this step.
+The easiest way to run the pipeline is to do the whole thing in one go. Either of these commands will accomplish that. If the ```pipeline_with_ingest``` in the ```config.yaml``` file is set to ```True```, both the AWS crednetials and ```SQLALCHEMY_DATABASE_URI``` are needed. However, if it is set to ```False```, only the AWS credentials need to be set for this step.
 
 #### Makefile:
 ```bash
