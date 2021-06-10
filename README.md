@@ -52,7 +52,7 @@ Business Metrics:
 
 ```
 ├── README.md                         <- You are here
-├── api
+├── app
 │   ├── static/                       <- CSS, JS files that remain static
 │   ├── templates/                    <- HTML (or other code) that is templated and changes based on a set of inputs
 │   ├── boot.sh                       <- Start up script for launching app in Docker container.
@@ -72,21 +72,8 @@ Business Metrics:
 │   ├── processed/                    <- Processed raw data sources
 │   ├── results/                      <- Model results
 │
-├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder 
-│
-├── docs/                             <- Sphinx documentation based on Python docstrings. Optional for this project. 
-│
-├── figures/                          <- Generated graphics and figures to be used in reporting, documentation, etc
-│
-├── models/                           <- Trained model objects (TMOs), model predictions, and/or model summaries
-│
-├── notebooks/
-│   ├── archive/                      <- Develop notebooks no longer being used.
-│   ├── deliver/                      <- Notebooks shared with others / in final state
-│   ├── develop/                      <- Current notebooks being used in development.
-│   ├── template.ipynb                <- Template notebook for analysis with useful imports, helper functions, and SQLAlchemy setup. 
-│
-├── reference/                        <- Any reference material relevant to the project
+├── deliverables/                     <- Any white papers, presentations, final work products that are presented or delivered to a stakeholder
+│   ├── presentation_slides           <- Slides deomonstrating how the app was created
 │
 ├── src/                              <- Source data for the project
 │   ├── create_db.py                  <- Script to create database and tables
